@@ -17,7 +17,7 @@ class _TactileDeckAppState extends State<TactileDeckApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Cyber-Tactile Control Studio',
+      title: 'DJ Soundboard',
       debugShowCheckedModeBanner: false,
       theme: isDarkMode
           ? ThemeData.dark(useMaterial3: true)
@@ -45,24 +45,28 @@ class ControlDeckScreen extends StatefulWidget {
 }
 
 class _ControlDeckScreenState extends State<ControlDeckScreen> {
-  int totalTaps = 0;
-  double powerLevel = 65.0;
-  String systemStatus = "READY";
+  int totalDrops = 0;
+  double bpm = 120.0;
+  String lastSound = "READY";
+  bool partyMode = false;
 
-  // 🐛 BUG #1 — this flag was owned by the SCREEN, not by an individual button.
-  // FIX: Each TactileButton now owns its own private isPressed state.
-
-  void _triggerAction(String actionName) {
+  void _triggerSound(String soundName) {
     setState(() {
-      totalTaps++;
-      systemStatus = "$actionName ACTIVATED";
+      totalDrops++;
+      lastSound = "$soundName PLAYED";
+      partyMode = totalDrops >= 10;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenBg =
-        widget.isDark ? const Color(0xFF1E1F29) : const Color(0xFFE0E5EC);
+    final screenBg = partyMode
+        ? (widget.isDark
+            ? const Color(0xFF301934)
+            : const Color(0xFFFFE4F3))
+        : (widget.isDark
+            ? const Color(0xFF1E1F29)
+            : const Color(0xFFE0E5EC));
 
     final cardBg =
         widget.isDark ? const Color(0xFF282A36) : Colors.white;
@@ -71,7 +75,7 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
       backgroundColor: screenBg,
       appBar: AppBar(
         title: const Text(
-          "TACTILE CONTROL STUDIO",
+          "DJ SOUNDBOARD",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
@@ -97,6 +101,10 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
         ),
         child: Column(
           children: [
+            const SoundboardHeader(),
+
+            const SizedBox(height: 20),
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -116,51 +124,18 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Column(
-                    children: [
-                      const Text(
-                        "TOTAL TAPS",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "$totalTaps",
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  MetricBadge(
+                    title: "TOTAL DROPS",
+                    value: "$totalDrops",
                   ),
                   Container(
                     width: 1,
                     height: 40,
                     color: Colors.grey.withOpacity(0.3),
                   ),
-                  Column(
-                    children: [
-                      const Text(
-                        "ENERGY LEVEL",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${powerLevel.toInt()}%",
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
-                        ),
-                      ),
-                    ],
+                  MetricBadge(
+                    title: "BPM",
+                    value: "${bpm.toInt()}",
                   ),
                 ],
               ),
@@ -169,7 +144,7 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
             const SizedBox(height: 16),
 
             Text(
-              "STATUS: $systemStatus",
+              "STATUS: $lastSound",
               style: TextStyle(
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.w600,
@@ -179,6 +154,18 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
               ),
             ),
 
+            if (partyMode) ...[
+              const SizedBox(height: 12),
+              const Text(
+                "PARTY MODE 🔥",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.pinkAccent,
+                ),
+              ),
+            ],
+
             const SizedBox(height: 28),
 
             Wrap(
@@ -187,32 +174,32 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
               alignment: WrapAlignment.center,
               children: [
                 TactileButton(
-                  icon: Icons.flash_on,
-                  label: "TURBO",
-                  accentColor: Colors.amber,
+                  icon: Icons.album,
+                  label: "KICK",
+                  accentColor: Colors.orangeAccent,
                   isDark: widget.isDark,
-                  onPressed: () => _triggerAction("TURBO BOOST"),
+                  onPressed: () => _triggerSound("BASS KICK"),
                 ),
                 TactileButton(
-                  icon: Icons.shield,
-                  label: "SHIELD",
-                  accentColor: Colors.tealAccent,
+                  icon: Icons.graphic_eq,
+                  label: "BASS",
+                  accentColor: Colors.blueAccent,
                   isDark: widget.isDark,
-                  onPressed: () => _triggerAction("DEFENSE SHIELD"),
+                  onPressed: () => _triggerSound("BASS DROP"),
                 ),
                 TactileButton(
-                  icon: Icons.wifi_tethering,
-                  label: "RADAR",
+                  icon: Icons.music_note,
+                  label: "SYNTH",
                   accentColor: Colors.purpleAccent,
                   isDark: widget.isDark,
-                  onPressed: () => _triggerAction("PULSE RADAR"),
+                  onPressed: () => _triggerSound("SYNTH"),
                 ),
                 TactileButton(
-                  icon: Icons.rocket_launch,
-                  label: "LAUNCH",
-                  accentColor: Colors.redAccent,
+                  icon: Icons.loop,
+                  label: "LOOP",
+                  accentColor: Colors.greenAccent,
                   isDark: widget.isDark,
-                  onPressed: () => _triggerAction("THRUSTER LAUNCH"),
+                  onPressed: () => _triggerSound("LOOP"),
                 ),
               ],
             ),
@@ -220,7 +207,7 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
             const SizedBox(height: 36),
 
             Text(
-              "Power Calibration: ${powerLevel.toInt()}%",
+              "Tempo: ${bpm.toInt()} BPM",
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -228,16 +215,13 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
             ),
 
             Slider(
-              value: powerLevel,
-              min: 0,
-              max: 100,
-              activeColor: Colors.blueAccent,
+              value: bpm,
+              min: 60,
+              max: 180,
+              activeColor: Colors.purpleAccent,
               inactiveColor: Colors.grey.withOpacity(0.3),
-
-              // 🐛 BUG #2 — value changed without rebuilding the UI.
-              // FIX: Update powerLevel inside setState().
               onChanged: (newVal) =>
-                  setState(() => powerLevel = newVal),
+                  setState(() => bpm = newVal),
             ),
           ],
         ),
@@ -246,8 +230,76 @@ class _ControlDeckScreenState extends State<ControlDeckScreen> {
   }
 }
 
-// 🐛 BUG #1 — buttons previously shared one isPressed state.
-// FIX: Each TactileButton now owns its own private isPressed state.
+class SoundboardHeader extends StatelessWidget {
+  const SoundboardHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        Icon(
+          Icons.headphones,
+          size: 45,
+          color: Colors.purpleAccent,
+        ),
+        SizedBox(height: 8),
+        Text(
+          "LIVE MIX CONTROL",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5,
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(
+          "Tap sounds and control the tempo",
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class MetricBadge extends StatelessWidget {
+  final String title;
+  final String value;
+
+  const MetricBadge({
+    super.key,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.purpleAccent,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class TactileButton extends StatefulWidget {
   final IconData icon;
   final String label;
@@ -284,11 +336,8 @@ class _TactileButtonState extends State<TactileButton> {
         widget.isDark ? const Color(0xFF2F3244) : Colors.white;
 
     return GestureDetector(
-      // 🐛 BUG #4 — action previously fired during touch-down.
-      // FIX: Touch-down only changes the pressed state.
       onTapDown: (_) => setState(() => isPressed = true),
 
-      // Action now fires when the user releases the button.
       onTapUp: (_) {
         setState(() => isPressed = false);
         widget.onPressed();
@@ -303,9 +352,6 @@ class _TactileButtonState extends State<TactileButton> {
         decoration: BoxDecoration(
           color: baseColor,
           borderRadius: BorderRadius.circular(24),
-
-          // 🐛 BUG #3 — pressed and unpressed shadows were reversed.
-          // FIX: Pressed uses smaller shadows and unpressed uses larger shadows.
           boxShadow: isPressed
               ? [
                   BoxShadow(
